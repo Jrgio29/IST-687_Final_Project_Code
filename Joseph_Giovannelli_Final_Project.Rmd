@@ -1,0 +1,650 @@
+---
+title: "NFL_Combine_Project"
+output: html_document
+date: "2023-11-14"
+---
+
+## R Markdown
+
+Intial Import
+
+```{r}
+CombData <- read.csv('C:/Users/jgiov/OneDrive/Documents/Masters Program/IST - 687 Intro to Data Science/Week 6/combine_data_2000__2018.csv')
+head(CombData)
+```
+
+
+
+
+
+
+
+Cleaning Data Set
+
+
+
+
+
+
+
+
+```{r}
+library(imputeTS)
+CombData$Ht <- na_interpolation(CombData$Ht)
+CombData$Wt <- na_interpolation(CombData$Wt)
+CombData$Forty <- na_interpolation(CombData$Forty)
+CombData$Vertical <- na_interpolation(CombData$Vertical)
+CombData$BenchReps <- na_interpolation(CombData$BenchReps)
+CombData$BroadJump <- na_interpolation(CombData$BroadJump)
+CombData$Cone <- na_interpolation(CombData$Cone)
+CombData$Shuttle <- na_interpolation(CombData$Shuttle)
+CombData <- na.omit(CombData[!is.na(CombData$Team),])
+str(CombData)
+```
+
+
+
+
+
+
+Normalizing data set to see how it compares to the linearity of the complex data set
+
+
+
+
+
+
+
+
+```{r}
+NormData <- CombData[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+NormData$Ht <- (NormData$Ht - min(NormData$Ht )) / (max(NormData$Ht) - min(NormData$Ht))
+NormData$Wt <- (NormData$Wt - min(NormData$Wt )) / (max(NormData$Wt) - min(NormData$Wt))
+NormData$Forty <- (NormData$Forty - min(NormData$Forty )) / (max(NormData$Forty) - min(NormData$Forty))
+NormData$Vertical <- (NormData$Vertical - min(NormData$Vertical )) / (max(NormData$Vertical) - min(NormData$Vertical))
+NormData$BenchReps <- (NormData$BenchReps - min(NormData$BenchReps)) / (max(NormData$BenchReps) - min(NormData$BenchReps))
+NormData$BroadJump <- (NormData$BroadJump - min(NormData$BroadJump)) / (max(NormData$BroadJump) - min(NormData$BroadJump))
+NormData$Cone <- (NormData$Cone - min(NormData$Cone)) / (max(NormData$Cone) - min(NormData$Cone))
+NormData$Shuttle <- (NormData$Shuttle - min(NormData$Shuttle)) / (max(NormData$Shuttle) - min(NormData$Shuttle))
+NormData$Pick <- (NormData$Pick - min(NormData$Pick)) / (max(NormData$Pick) - min(NormData$Pick))
+head(NormData)
+```
+
+
+
+
+
+
+
+Subsetting the Data by Postion
+
+
+
+
+
+
+
+
+```{r}
+QB_Data <- subset(CombData, Pos == 'QB')
+head(QB_Data)
+```
+
+```{r}
+RB_Data <- subset(CombData, Pos == 'RB')
+head(RB_Data)
+```
+
+```{r}
+WR_Data <- subset(CombData, Pos == 'WR')
+head(WR_Data)
+```
+
+```{r}
+TE_Data <- subset(CombData, Pos == 'TE')
+head(TE_Data)
+```
+
+```{r}
+OL_Data <- subset(CombData, Pos == 'OT' | Pos == 'OG' | Pos == 'C' )
+head(OL_Data)
+```
+
+```{r}
+DL_Data <- subset(CombData, Pos == 'DT' | Pos == 'DE')
+head(DL_Data)
+```
+
+```{r}
+LB_Data <- subset(CombData, Pos == 'OLB' | Pos == 'ILB')
+head(LB_Data)
+```
+
+```{r}
+DB_Data <- subset(CombData, Pos == 'CB' | Pos == 'SS' | Pos == 'FS' )
+head(DB_Data)
+```
+
+
+
+
+
+
+
+Beginging of correlation statistics by position. 
+
+
+
+
+
+
+
+```{r}
+library(corrplot)
+CorQB <- QB_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Shuttle","Cone","Pick")]
+cor(CorQB)
+corrplot(cor(CorQB),method='color',title = 'QB Correlation')
+```
+
+
+```{r}
+CorRB <- RB_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorRB)
+corrplot(cor(CorRB),method='color',title = 'RB Correlation')
+```
+
+
+```{r}
+CorWR <- WR_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorWR)
+corrplot(cor(CorWR),method='color',title = 'WR Correlation')
+```
+
+
+```{r}
+CorTE <- TE_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorTE)
+corrplot(cor(CorTE),method='color',title = 'TE Correlation')
+```
+
+
+```{r}
+CorOL <- OL_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorOL)
+corrplot(cor(CorOL),method='color',title = 'OL Correlation')
+```
+
+
+```{r}
+CorDL <- DL_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorDL)
+corrplot(cor(CorDL),method='color',title = 'DL Correlation')
+```
+
+
+```{r}
+CorLB <- LB_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorLB)
+corrplot(cor(CorLB),method='color',title = 'LB Correlation')
+```
+
+
+```{r}
+CorDB <- DB_Data[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorDB)
+corrplot(cor(CorDB),method='color',title = 'DB Correlation')
+```
+
+```{r}
+CorOv <- CombData[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorOv)
+corrplot(cor(CorOv),method='color',title = 'Overall Correlation')
+```
+
+```{r}
+CorNorm <- NormData[, c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+cor(CorNorm)
+corrplot(cor(CorNorm),method='color',title = 'Overall Correlation')
+```
+
+
+
+
+
+
+Summarizing the Correlation Statistics of Each Subset of Data
+
+
+
+
+
+
+
+
+
+```{r}
+summary(CorQB)
+```
+
+```{r}
+summary(CorRB)
+```
+
+```{r}
+summary(CorWR)
+```
+
+```{r}
+summary(CorTE)
+```
+
+```{r}
+summary(CorOL)
+```
+
+```{r}
+summary(CorDL)
+```
+
+```{r}
+summary(CorLB)
+```
+
+```{r}
+summary(CorDB)
+```
+
+
+
+
+
+
+
+
+Plotting the Linearity of significant combine Events
+
+
+
+
+
+
+
+
+
+```{r}
+library(ggplot2)
+ggplot(CorOv, aes(x = Forty, y = Pick)) + geom_point(color = 'red') + labs(title = 'Forty vs Pick')
+```
+
+```{r}
+ggplot(CorOv, aes(x = Shuttle, y = Pick)) + geom_point(color = 'green') + labs(title = 'Shuttle vs Pick')
+```
+
+```{r}
+ggplot(CorNorm, aes(x = Shuttle, y = Pick)) + geom_point(color = 'Blue') + labs(title = 'Forty vs Pick')
+```
+
+```{r}
+ggplot(CorOv, aes(x = BenchReps, y = Pick)) + geom_point(color = 'purple') + labs(title = 'Bench Reps vs Pick')
+```
+
+
+
+
+
+
+
+
+Plotting the Number of Postitions picked in each round
+
+
+
+
+
+
+
+
+```{r}
+library(tidyverse)
+ggplot(CombData, aes(x = Round, fill = Pos)) + geom_bar(position = 'dodge') + labs(title = 'Pick by Position', x = "Round", y = "Count", fill = "Position") + theme_minimal()
+```
+
+
+
+
+
+
+
+Graphing Quartile Statistics for Significant combine Events by Position
+
+
+
+
+
+
+
+
+```{r}
+ggplot(CorRB, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "RB Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorQB, aes(x = Pick, y = BroadJump, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "QB Broad Jump Distance", x = "Pick", y = "Broad Jump") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorWR, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "WR Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorDB, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "DB Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorTE, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "TE Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorOL, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "OL Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorDL, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "DL Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+```{r}
+ggplot(CorLB, aes(x = Pick, y = Forty, fill = Pick)) +
+  geom_boxplot() +
+  labs(title = "LB Forty Times", x = "Pick", y = "Forty") +
+  theme_minimal()
+```
+
+
+
+
+
+
+
+Linear Regression Modeling with Events Only
+
+
+
+
+
+
+
+```{R}
+Combine.lm=lm(formula = Pick~Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=CombData)
+summary(Combine.lm)
+```
+
+Prediction test for Linear Model with Events Only
+
+
+
+
+
+
+```{R}
+predDF <- data.frame(Forty=4.58,Vertical=25,BenchReps=23,Cone=8.48,Shuttle=4.98,BroadJump=94)
+predict(CombineExt.lm,predDF,type="response")
+```
+
+
+
+
+
+
+Linear Model with Events and Physical Characteristics
+
+
+
+
+
+
+
+```{R}
+CombineExt.lm=lm(formula = Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=CombData)
+summary(CombineExt.lm)
+```
+
+
+Prediction Test for Linear Model with Events and Physical Characteristics
+
+
+```{R}
+predDF <- data.frame(Ht=72,Wt=218,Forty=4.58,Vertical=25,BenchReps=23,Cone=8.48,Shuttle=4.98,BroadJump=94)
+predict(CombineExt.lm,predDF,type="response")
+```
+
+
+
+
+
+Linear Model with Physical Characteristics
+
+
+
+
+
+
+
+```{R}
+CombineBody.lm=lm(formula = Pick~Ht+Wt,data=CombData)
+summary(CombineBody.lm)
+```
+
+
+
+
+
+
+
+
+Re-import dataset and make pick categorical as Drafted vs. Undrafted
+
+
+
+
+
+
+
+```{R}
+CombData2 <- read.csv('C:/Users/jgiov/OneDrive/Documents/Masters Program/IST - 687 Intro to Data Science/Week 6/combine_data_2000__2018.csv')
+CombData2$Ht <- na_interpolation(CombData2$Ht)
+CombData2$Wt <- na_interpolation(CombData2$Wt)
+CombData2$Forty <- na_interpolation(CombData2$Forty)
+CombData2$Vertical <- na_interpolation(CombData2$Vertical)
+CombData2$BenchReps <- na_interpolation(CombData2$BenchReps)
+CombData2$BroadJump <- na_interpolation(CombData2$BroadJump)
+CombData2$Cone <- na_interpolation(CombData2$Cone)
+CombData2$Shuttle <- na_interpolation(CombData2$Shuttle)
+CombData2$Pick[!is.na(CombData2$Pick)] <- 1
+CombData2$Pick[is.na(CombData2$Pick)] <- 0
+RB_Data2 <- subset(CombData2, Pos == 'RB')
+WR_Data2 <- subset(CombData2, Pos == 'WR')
+CombData2 <- CombData2[,c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+RB_Data2 <- RB_Data2[,c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+WR_Data2 <- RB_Data2[,c("Ht","Wt","Forty","Vertical","BenchReps","BroadJump","Cone","Shuttle","Pick")]
+```
+
+
+
+
+
+
+Support Vector Machine Classification Models
+
+
+
+
+
+
+```{R}
+library(caret)
+library(e1071)
+trainList <- createDataPartition(y=CombData2$Pick, p=.80, list=FALSE)
+trainSet <- CombData2[trainList,]
+testSet <- CombData2[-trainList,]
+fit <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSet,kernel = "linear",type="C-classification")
+svmPred <- predict(fit,testSet)
+confMatrix <- table(svmPred, testSet$Pick)
+confMatrix
+accuracy <- sum(diag(confMatrix)) / sum(confMatrix)
+errorRate <- (sum(confMatrix) - sum(diag(confMatrix))) / sum(confMatrix)
+accuracy
+errorRate
+```
+```{R}
+library(caret)
+library(e1071)
+trainList <- createDataPartition(y=CombData2$Pick, p=.80, list=FALSE)
+trainSet <- CombData2[trainList,]
+testSet <- CombData2[-trainList,]
+fit <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSet,kernel = "radial",type="C-classification")
+svmPred <- predict(fit,testSet)
+confMatrix <- table(svmPred, testSet$Pick)
+confMatrix
+accuracy <- sum(diag(confMatrix)) / sum(confMatrix)
+errorRate <- (sum(confMatrix) - sum(diag(confMatrix))) / sum(confMatrix)
+accuracy
+errorRate
+```
+
+
+```{R}
+library(caret)
+library(e1071)
+trainList <- createDataPartition(y=CombData2$Pick, p=.80, list=FALSE)
+trainSet <- CombData2[trainList,]
+testSet <- CombData2[-trainList,]
+fit <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSet,kernel = "sigmoid",type="C-classification")
+svmPred <- predict(fit,testSet)
+confMatrix <- table(svmPred, testSet$Pick)
+confMatrix
+accuracy <- sum(diag(confMatrix)) / sum(confMatrix)
+errorRate <- (sum(confMatrix) - sum(diag(confMatrix))) / sum(confMatrix)
+accuracy
+errorRate
+```
+
+
+
+
+```{R}
+library(caret)
+library(e1071)
+trainList <- createDataPartition(y=CombData2$Pick, p=.80, list=FALSE)
+trainSet <- CombData2[trainList,]
+testSet <- CombData2[-trainList,]
+fit <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSet,kernel = "polynomial",type="C-classification")
+svmPred <- predict(fit,testSet)
+confMatrix <- table(svmPred, testSet$Pick)
+confMatrix
+accuracy <- sum(diag(confMatrix)) / sum(confMatrix)
+errorRate <- (sum(confMatrix) - sum(diag(confMatrix))) / sum(confMatrix)
+accuracy
+errorRate
+```
+
+
+
+
+
+
+Regression Tree Classification Model
+
+
+
+
+
+
+
+
+```{R}
+library(rpart)
+rpart.model <- rpart(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSet, method='class')
+treePred <- predict(rpart.model,newdata = testSet, type = "class")
+confMatrix <- table(treePred, testSet$Pick)
+confMatrix
+accuracy <- sum(diag(confMatrix)) / sum(confMatrix)
+errorRate <- (sum(confMatrix) - sum(diag(confMatrix))) / sum(confMatrix)
+accuracy
+errorRate
+```
+
+
+
+
+
+
+
+Support Vector Machine Classification Model for subsetted Data
+
+
+
+
+
+
+
+
+
+```{R}
+library(caret)
+library(e1071)
+trainListRB <- createDataPartition(y=RB_Data2$Pick, p=.80, list=FALSE)
+trainSetRB <- RB_Data2[trainList,]
+testSetRB <- RB_Data2[-trainList,]
+fitRB <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSetRB,kernel = "radial",type="C-classification")
+svmPredRB <- predict(fitRB,testSetRB)
+confMatrixRB <- table(svmPredRB, testSetRB$Pick)
+confMatrixRB
+accuracyRB <- sum(diag(confMatrixRB)) / sum(confMatrixRB)
+errorRateRB <- (sum(confMatrixRB) - sum(diag(confMatrixRB))) / sum(confMatrixRB)
+accuracyRB
+errorRateRB
+```
+
+```{R}
+library(caret)
+library(e1071)
+trainListWR <- createDataPartition(y=WR_Data2$Pick, p=.80, list=FALSE)
+trainSetWR <- WR_Data2[trainListWR,]
+testSetWR <- WR_Data2[-trainListWR,]
+fitWR <- svm(Pick~Ht+Wt+Forty+Vertical+BenchReps+Cone+Shuttle+BroadJump,data=trainSetWR,kernel = "radial",type="C-classification")
+svmPredWR <- predict(fitWR,testSetWR)
+confMatrixWR <- table(svmPredWR, testSetWR$Pick)
+confMatrixWR
+accuracyWR <- sum(diag(confMatrixWR)) / sum(confMatrixWR)
+errorRateWR <- (sum(confMatrixWR) - sum(diag(confMatrixWR))) / sum(confMatrixWR)
+accuracyWR
+errorRateWR
+```
+
+
+
+
+
+
+
